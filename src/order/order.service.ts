@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, InternalServerErrorException } from '@nestjs/common';
+import { Injectable, NotFoundException, InternalServerErrorException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { StatusOrder } from '@prisma/client';
 import { CreateOrderDto } from './dto/create-order.dto';
@@ -9,14 +9,20 @@ import { UpdateOrderDto } from './dto/update-order.dto';
 export class OrderService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(data: CreateOrderDto,req: Request) {
+  async create(data: CreateOrderDto, req: Request) {
     try {
+      const userId = req['user-id'];
+      console.log(userId)
+      if (!userId) {
+        throw new BadRequestException('Foydalanuvchi ID topilmadi');
+      }
+  
       const order = await this.prisma.order.create({
         data: {
-          restaurantId: data.restaurantId,
           table: data.table,
-          waiterId: req['user-id'],
           status: 'PENDING',
+          restaurantId: data.restaurantId,
+          waiterId: userId ,
           OrderItems: {
             create: data.orderItem.map(item => ({
               product: { connect: { id: item.productId } },
@@ -30,12 +36,14 @@ export class OrderService {
           },
         },
       });
-
+  
       return order;
     } catch (error) {
+      console.error(error);
       throw new InternalServerErrorException(error.message);
     }
   }
+  
 
   async findAll(
     status?: StatusOrder,

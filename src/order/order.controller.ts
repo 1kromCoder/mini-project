@@ -1,15 +1,17 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query, Req } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, Req, UseGuards } from '@nestjs/common';
 import { OrderService } from './order.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { StatusOrder } from '@prisma/client';
 import { Request } from 'express';
 import { ApiQuery } from '@nestjs/swagger';
+import { AuthGuard } from 'src/guard/auth.guard';
 
 @Controller('order')
 export class OrderController {
   constructor(private readonly orderService: OrderService) {}
 
+  @UseGuards(AuthGuard)
   @Post()
   create(@Body() orderdata: CreateOrderDto, @Req() req:Request) {
     return this.orderService.create(orderdata,req);
