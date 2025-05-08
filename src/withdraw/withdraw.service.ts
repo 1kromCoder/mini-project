@@ -108,16 +108,49 @@ export class WithdrawService {
     }
   }
 
-  async findAll() {
+  async findAll(query: {
+    page?: number;
+    limit?: number;
+    sortBy?: string;
+    sortOrder?: 'asc' | 'desc';
+    type?: 'INCOME' | 'OUTCOME';
+    restaurantId?: string;
+  }) {
     try {
-      return await this.prisma.withDraw.findMany({
+      const {
+        page = 1,
+        limit = 10,
+        sortBy = 'createdAt',
+        sortOrder = 'desc',
+        type,
+        restaurantId,
+      } = query;
+
+      const where: any = {};
+      if (type) where.type = type;
+      if (restaurantId) where.restaurantId = restaurantId;
+
+      const total = await this.prisma.withDraw.count({ where });
+
+      const data = await this.prisma.withDraw.findMany({
+        where,
         include: {
           restaurant: true,
+          user: true,
         },
         orderBy: {
-          createdAt: 'desc',
+          [sortBy]: sortOrder,
         },
+        skip: (page - 1) * limit,
+        take: limit,
       });
+
+      return {
+        total,
+        page,
+        limit,
+        data,
+      };
     } catch (error) {
       throw new InternalServerErrorException(
         'Withdrawlarni olishda xatolik yuz berdi',
