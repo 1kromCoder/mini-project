@@ -1,4 +1,11 @@
-import { Body, Controller, Delete, Param, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Param,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import { UserRole } from '@prisma/client';
 import { AuthGuard } from 'src/guard/auth.guard';
 import { RoleGuard } from 'src/guard/role.guard';
@@ -18,7 +25,7 @@ export class AdminController {
     return this.userService.createAdmin(dto);
   }
 
-  @Roles(UserRole.ADMIN) 
+  @Roles(UserRole.ADMIN)
   @UseGuards(RoleGuard)
   @UseGuards(AuthGuard)
   @Delete(':id')

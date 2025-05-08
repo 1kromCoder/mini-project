@@ -22,7 +22,6 @@ export class AuthGuard implements CanActivate {
       let data = this.jwt.verify(token);
       request['user-id'] = data.id;
       request['user-role'] = data.role;
-      console.log(data.id,data.role)
       return true;
     } catch (error) {
       throw new UnauthorizedException('Wrong credentials!');
