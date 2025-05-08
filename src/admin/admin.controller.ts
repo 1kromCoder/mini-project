@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import {
   Body,
   Controller,
@@ -7,9 +6,6 @@ import {
   Post,
   UseGuards,
 } from '@nestjs/common';
-=======
-import { Body, Controller, Delete, Get, Param, Post, UseGuards } from '@nestjs/common';
->>>>>>> c46f2ea98aa15971d3d340dddbe553b74afc8aa7
 import { UserRole } from '@prisma/client';
 import { AuthGuard } from 'src/guard/auth.guard';
 import { RoleGuard } from 'src/guard/role.guard';
