@@ -15,11 +15,10 @@ import { hasSubscribers } from 'diagnostics_channel';
 import { CreateAdminDto } from './dto/admin-create.dto';
 import { UserRole } from '@prisma/client';
 
-
-export  enum userrole{
+export enum userrole {
   CASHER,
   WAITER,
-  OWNER
+  OWNER,
 }
 @Injectable()
 export class UserService {
@@ -53,53 +52,56 @@ export class UserService {
       throw new BadRequestException(error.message);
     }
   }
-  
 
-  async checkPhone(phone: string){
+  async checkPhone(phone: string) {
     try {
-      let user = this.prisma.user.findFirst({where:{phone}})
-      return user
+      let user = this.prisma.user.findFirst({ where: { phone } });
+      return user;
     } catch (error) {
-      throw new BadRequestException(error.message)
+      throw new BadRequestException(error.message);
     }
   }
 
-  async register(data: CreateUserDto){
+  async register(data: CreateUserDto) {
     try {
-      if(data.role == "ADMIN" || data.role == 'SUPERADMIN'){
-        throw new BadRequestException("Please change role, only allow WAITER, CASHER and WAITER")
+      if (data.role == 'ADMIN' || data.role == 'SUPERADMIN') {
+        throw new BadRequestException(
+          'Please change role, only allow WAITER, CASHER and WAITER',
+        );
       }
-      let user = await this.checkPhone(data.phone)
-      if(user){
-        throw new BadRequestException("User already exists!")
+      let user = await this.checkPhone(data.phone);
+      if (user) {
+        throw new BadRequestException('User already exists!');
       }
-      let hash = bcrypt.hashSync(data.password,10)
-      let newUser = await this.prisma.user.create({data:{...data,password:hash}})
-      return newUser
+      let hash = bcrypt.hashSync(data.password, 10);
+      let newUser = await this.prisma.user.create({
+        data: { ...data, password: hash },
+      });
+      return newUser;
     } catch (error) {
-      throw new BadRequestException(error.message)
+      throw new BadRequestException(error.message);
     }
   }
 
-  async login(data:LoginUserDto){
+  async login(data: LoginUserDto) {
     try {
-      let user = await this.checkPhone(data.phone)
-      if(!user){
-        throw new NotFoundException("User not found")
+      let user = await this.checkPhone(data.phone);
+      if (!user) {
+        throw new NotFoundException('User not found');
       }
 
-      let isMatch = bcrypt.compare(data.password,user.password)
-      if(!isMatch){
-        throw new BadRequestException("Wrong creadentials!")
+      let isMatch = bcrypt.compare(data.password, user.password);
+      if (!isMatch) {
+        throw new BadRequestException('Wrong creadentials!');
       }
 
-      let payload = {id: user.id, role: user.role}
-      let accessToken = this.generateAccessToken(payload)
-      let refreshToken = this.generateRefreshToken(payload)
+      let payload = { id: user.id, role: user.role };
+      let accessToken = this.generateAccessToken(payload);
+      let refreshToken = this.generateRefreshToken(payload);
 
-      return {accessToken, refreshToken}
+      return { accessToken, refreshToken };
     } catch (error) {
-      throw new BadRequestException(error.message)
+      throw new BadRequestException(error.message);
     }
   }
 
@@ -110,17 +112,15 @@ export class UserService {
     order: 'asc' | 'desc' = 'asc',
     name?: string,
     role?: UserRole,
-    restaurantId?: string
+    restaurantId?: string,
   ) {
     try {
       const where: any = {};
-      if (name)
-        where.firstName = { contains: name, mode: 'insensitive' };
+      if (name) where.firstName = { contains: name, mode: 'insensitive' };
 
-      if (role)
-        where.role = role;
+      if (role) where.role = role;
 
-      if (restaurantId){
+      if (restaurantId) {
         where.restaurantId = restaurantId;
       }
 
@@ -143,7 +143,6 @@ export class UserService {
     }
   }
 
-
   async findAllForOwner(
     page = 1,
     limit = 10,
@@ -151,19 +150,20 @@ export class UserService {
     order: 'asc' | 'desc' = 'asc',
     name?: string,
     role?: userrole,
-    ownerId?: string
+    ownerId?: string,
   ) {
     try {
       const where: any = {};
-      if (name)
-        where.firstName = { contains: name, mode: 'insensitive' };
+      if (name) where.firstName = { contains: name, mode: 'insensitive' };
 
-      if(role){
-        where.role = role
+      if (role) {
+        where.role = role;
       }
 
-      if (ownerId){
-        let owner = await this.prisma.user.findFirst({where:{id:ownerId}})
+      if (ownerId) {
+        let owner = await this.prisma.user.findFirst({
+          where: { id: ownerId },
+        });
         where.restaurantId = owner?.restaurantId;
       }
 
@@ -189,7 +189,8 @@ export class UserService {
   async findOne(id: string) {
     try {
       let user = await this.prisma.user.findFirst({
-        where: { id },include:{restaurant:true},
+        where: { id },
+        include: { restaurant: true },
       });
       if (!user) {
         throw new BadRequestException('user not found');
@@ -200,11 +201,11 @@ export class UserService {
     }
   }
 
-
   async me(id: string) {
     try {
       let user = await this.prisma.user.findFirst({
-        where: { id },include:{restaurant:true},
+        where: { id },
+        include: { restaurant: true },
       });
       if (!user) {
         throw new BadRequestException('user not found');
@@ -217,8 +218,10 @@ export class UserService {
 
   async update(id: string, data: UpdateUserDto) {
     try {
-      if(data.role == "ADMIN" || data.role == 'SUPERADMIN'){
-        throw new BadRequestException("Please change role, only allow WAITER, CASHER and WAITER")
+      if (data.role == 'ADMIN' || data.role == 'SUPERADMIN') {
+        throw new BadRequestException(
+          'Please change role, only allow WAITER, CASHER and WAITER',
+        );
       }
       let user = await this.prisma.user.update({ where: { id }, data });
       if (!user) {
@@ -242,28 +245,30 @@ export class UserService {
 
   async createAdmin(data: CreateAdminDto) {
     try {
-      const exists = await this.checkPhone(data.phone)
-      if (exists) throw new BadRequestException('Phone already exists')
-  
-      let hash = bcrypt.hashSync(data.password,10)
-      const admin = await this.prisma.user.create({data:{...data,password:hash}})
+      const exists = await this.checkPhone(data.phone);
+      if (exists) throw new BadRequestException('Phone already exists');
 
-      return admin
+      let hash = bcrypt.hashSync(data.password, 10);
+      const admin = await this.prisma.user.create({
+        data: { ...data, password: hash },
+      });
+
+      return admin;
     } catch (error) {
-      throw new BadRequestException(error.message)
+      throw new BadRequestException(error.message);
     }
   }
-  
+
   async deleteAdmin(id: string) {
     try {
-      const user = await this.findOne(id)
+      const user = await this.findOne(id);
       if (user.role !== 'ADMIN' && user.role !== 'SUPERADMIN') {
-        throw new BadRequestException('User is not an admin')
+        throw new BadRequestException('User is not an admin');
       }
-  
-      return await this.prisma.user.delete({ where: { id } })
+
+      return await this.prisma.user.delete({ where: { id } });
     } catch (error) {
-      throw new BadRequestException(error.message)
+      throw new BadRequestException(error.message);
     }
   }
 }

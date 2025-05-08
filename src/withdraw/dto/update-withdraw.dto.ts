@@ -1,6 +1,6 @@
 import { ApiProperty, PartialType } from '@nestjs/swagger';
 import { CreateWithdrawDto } from './create-withdraw.dto';
-import { IsEnum, IsString } from 'class-validator';
+import { IsEnum, IsNumber, IsString } from 'class-validator';
 import { PayType, WithDrawType } from '@prisma/client';
 
 export class UpdateWithdrawDto extends PartialType(CreateWithdrawDto) {
@@ -17,4 +17,10 @@ export class UpdateWithdrawDto extends PartialType(CreateWithdrawDto) {
   @ApiProperty()
   @IsString()
   description?: string;
+  @ApiProperty()
+  @IsString()
+  orderId?: string;
+  @ApiProperty()
+  @IsNumber()
+  amount?: number;
 }

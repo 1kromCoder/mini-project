@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { PayType, WithDrawType } from '@prisma/client';
-import { IsEnum, IsString } from 'class-validator';
+import { IsEnum, IsNumber, IsString } from 'class-validator';
 
 export class CreateWithdrawDto {
   @ApiProperty()
@@ -16,4 +16,10 @@ export class CreateWithdrawDto {
   @ApiProperty()
   @IsString()
   description?: string;
+  @ApiProperty()
+  @IsString()
+  orderId: string;
+  @ApiProperty()
+  @IsNumber()
+  amount: number;
 }

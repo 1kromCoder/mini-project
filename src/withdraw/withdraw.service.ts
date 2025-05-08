@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
@@ -10,11 +11,16 @@ import { PrismaService } from 'src/prisma/prisma.service';
 @Injectable()
 export class WithdrawService {
   constructor(private readonly prisma: PrismaService) {}
-  async create(createWithdrawDto: CreateWithdrawDto) {
+  async create(createWithdrawDto: CreateWithdrawDto, id: string) {
     try {
+      let casherId = await this.prisma.user.findFirst({ where: { id } });
+      if (!casherId) {
+        throw new BadRequestException('casher not found');
+      }
       return await this.prisma.withDraw.create({
         data: {
           ...createWithdrawDto,
+          casherId: id,
         },
       });
     } catch (error) {
@@ -23,6 +29,44 @@ export class WithdrawService {
       );
     }
   }
+  async getWithdrawStats(restaurantId?: string) {
+    try {
+      const where = restaurantId ? { restaurantId } : {};
+
+      const income = await this.prisma.withDraw.aggregate({
+        _count: true,
+        _sum: { amount: true },
+        where: {
+          ...where,
+          type: 'INCOME',
+        },
+      });
+
+      const outcome = await this.prisma.withDraw.aggregate({
+        _count: true,
+        _sum: { amount: true },
+        where: {
+          ...where,
+          type: 'OUTCOME',
+        },
+      });
+
+      const balance = (income._sum.amount || 0) - (outcome._sum.amount || 0);
+
+      return {
+        totalIncome: income._sum.amount || 0,
+        totalOutcome: outcome._sum.amount || 0,
+        balance,
+        totalIncomeCount: income._count,
+        totalOutcomeCount: outcome._count,
+      };
+    } catch (error) {
+      throw new InternalServerErrorException(
+        'Statistikani hisoblashda xatolik yuz berdi',
+      );
+    }
+  }
+
   async findAll() {
     try {
       return await this.prisma.withDraw.findMany({

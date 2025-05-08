@@ -102,6 +102,8 @@ CREATE TABLE "WithDraw" (
     "casherId" TEXT NOT NULL,
     "description" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "orderId" TEXT NOT NULL,
+    "amount" DOUBLE PRECISION NOT NULL,
 
     CONSTRAINT "WithDraw_pkey" PRIMARY KEY ("id")
 );
@@ -146,6 +148,9 @@ ALTER TABLE "OrderItems" ADD CONSTRAINT "OrderItems_orderId_fkey" FOREIGN KEY ("
 
 -- AddForeignKey
 ALTER TABLE "WithDraw" ADD CONSTRAINT "WithDraw_restaurantId_fkey" FOREIGN KEY ("restaurantId") REFERENCES "Restaurant"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "WithDraw" ADD CONSTRAINT "WithDraw_orderId_fkey" FOREIGN KEY ("orderId") REFERENCES "Order"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "WithDraw" ADD CONSTRAINT "WithDraw_casherId_fkey" FOREIGN KEY ("casherId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
