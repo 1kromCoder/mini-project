@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import {
   Body,
   Controller,
@@ -6,10 +7,14 @@ import {
   Post,
   UseGuards,
 } from '@nestjs/common';
+=======
+import { Body, Controller, Delete, Get, Param, Post, UseGuards } from '@nestjs/common';
+>>>>>>> c46f2ea98aa15971d3d340dddbe553b74afc8aa7
 import { UserRole } from '@prisma/client';
 import { AuthGuard } from 'src/guard/auth.guard';
 import { RoleGuard } from 'src/guard/role.guard';
 import { Roles } from 'src/user/decorators/role.decorator';
+import { CreateAdminDto } from 'src/user/dto/admin-create.dto';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
 import { UserService } from 'src/user/user.service';
 
@@ -17,11 +22,11 @@ import { UserService } from 'src/user/user.service';
 export class AdminController {
   constructor(private readonly userService: UserService) {}
 
-  @Roles(UserRole.ADMIN)
-  @UseGuards(RoleGuard)
-  @UseGuards(AuthGuard)
+  // @Roles(UserRole.ADMIN)
+  // @UseGuards(RoleGuard)
+  // @UseGuards(AuthGuard)
   @Post()
-  createAdmin(@Body() dto: CreateUserDto) {
+  createAdmin(@Body() dto: CreateAdminDto) {
     return this.userService.createAdmin(dto);
   }
 
