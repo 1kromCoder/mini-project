@@ -1,0 +1,147 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Region {
+  id         String       @id @default(uuid())
+  name       String
+  Restaurant Restaurant[]
+}
+
+model Restaurant {
+  id        String     @id @default(uuid())
+  name      String
+  address   String
+  phone     String
+  tip       Int
+  Region    Region     @relation(fields: [regionId], references: [id])
+  regionId  String
+  isActive  Boolean
+  createdAt DateTime   @default(now())
+  User      User[]
+  Category  Category[]
+  Order     Order[]
+  WithDraw  WithDraw[]
+  Debt      Debt[]
+}
+
+model User {
+  id           String     @id @default(uuid())
+  name         String
+  phone        String
+  password     String
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id])
+  restaurantId String
+  role         UserRole
+  balance      Float      @default(0)
+  tgId         Int?
+  createdAt    DateTime   @default(now())
+  Order        Order[]
+  WithDraw     WithDraw[]
+  Debt         Debt[]
+}
+
+enum UserRole {
+  ADMIN
+  SUPERADMIN
+  CASHER
+  OWNER
+  WAITER
+}
+
+model Category {
+  id           String     @id @default(uuid())
+  name         String
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id])
+  restaurantId String
+  isActive     Boolean
+  createdAt    DateTime   @default(now())
+  Product      Product[]
+}
+
+model Product {
+  id         String       @id @default(uuid())
+  name       String
+  price      Float
+  category   Category     @relation(fields: [categoryId], references: [id])
+  categoryId String
+  isActive   Boolean
+  createdAt  DateTime     @default(now())
+  OrderItems OrderItems[]
+}
+
+model Order {
+  id           String       @id @default(uuid())
+  restaurant   Restaurant   @relation(fields: [restaurantId], references: [id])
+  restaurantId String
+  table        Int
+  status       StatusOrder
+  user         User         @relation(fields: [waiterId], references: [id])
+  waiterId     String
+  createdAt    DateTime     @default(now())
+  OrderItems   OrderItems[]
+  Debt         Debt[]
+}
+
+enum StatusOrder {
+  PENDING
+  PAYED
+  DEBTED
+}
+
+model OrderItems {
+  id        String   @id @default(uuid())
+  product   Product  @relation(fields: [productId], references: [id])
+  productId String
+  quantity  Int
+  order     Order    @relation(fields: [orderId], references: [id])
+  orderId   String
+  createdAt DateTime @default(now())
+}
+
+model WithDraw {
+  id           String       @id @default(uuid())
+  restaurant   Restaurant   @relation(fields: [restaurantId], references: [id])
+  restaurantId String
+  type         WithDrawType
+  payType      PayType
+  user         User         @relation(fields: [casherId], references: [id])
+  casherId     String
+  description  String?
+  createdAt    DateTime     @default(now())
+}
+
+enum WithDrawType {
+  INCOME
+  OUTCOME
+}
+
+enum PayType {
+  CARD
+  CASH
+}
+
+model Debt {
+  id           String     @id @default(uuid())
+  description  String
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id])
+  restaurantId String
+  order        Order      @relation(fields: [orderId], references: [id])
+  orderId      String
+  amount       Float
+  client       String
+  user         User       @relation(fields: [casherId], references: [id])
+  casherId     String
+  createdAt    DateTime   @default(now())
+}
