@@ -10,7 +10,7 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
-import { UserService } from './user.service';
+import { UserService, userrole } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { RefreshTokenDto } from './dto/refreshtoken.dto';
@@ -20,6 +20,7 @@ import { AuthGuard } from 'src/guard/auth.guard';
 import { RoleGuard } from 'src/guard/role.guard';
 import { Roles } from './decorators/role.decorator';
 import { UserRole } from '@prisma/client';
+import { fstat } from 'fs';
 
 enum sortEnum {
   id = 'id',
@@ -58,10 +59,12 @@ export class UserController {
   @ApiQuery({
     example: 1,
     name: 'page',
+    required:false
   })
   @ApiQuery({
     example: 10,
     name: 'limit',
+    required: false
   })
   @ApiQuery({
     name: 'sortBy',
@@ -77,12 +80,24 @@ export class UserController {
     name: 'name',
     required: false,
   })
+  @ApiQuery({
+    name: "restaurantId",
+    required: false,
+  })
+
+  @ApiQuery({
+    name: 'role',
+    enum: UserRole,
+    required: false,
+  })
   findAll(
     @Query('page') page: number,
     @Query('limit') limit: number,
     @Query('sortBy') sortBy: sortEnum,
     @Query('order') order: orderEnum,
     @Query('name') name: string,
+    @Query('role') role: UserRole,
+    @Query('restaurantId') restaurantId:string
   ) {
     return this.userService.findAll(
       Number(page),
@@ -90,6 +105,62 @@ export class UserController {
       sortBy,
       order,
       name,
+      role,
+      restaurantId
+    );
+  }
+
+  @Roles(UserRole.OWNER)
+  @UseGuards(RoleGuard)
+  @UseGuards(AuthGuard)
+  @Get("forOwner")
+  @ApiQuery({
+    example: 1,
+    name: 'page',
+    required:false
+  })
+  @ApiQuery({
+    example: 10,
+    name: 'limit',
+    required: false
+  })
+  @ApiQuery({
+    name: 'sortBy',
+    enum: sortEnum,
+    required: false,
+  })
+  @ApiQuery({
+    name: 'order',
+    enum: orderEnum,
+    required: false,
+  })
+  @ApiQuery({
+    name: 'name',
+    required: false,
+  })
+
+  @ApiQuery({
+    name: 'role',
+    enum: userrole,
+    required: false,
+  })
+  findAllForOwner(
+    @Query('page') page: number,
+    @Query('limit') limit: number,
+    @Query('sortBy') sortBy: sortEnum,
+    @Query('order') order: orderEnum,
+    @Query('name') name: string,
+    @Query('role') role: userrole,
+    @Req() req: Request
+  ) {
+    return this.userService.findAllForOwner(
+      Number(page),
+      Number(limit),
+      sortBy,
+      order,
+      name,
+      role,
+      req['user-id']
     );
   }
 
