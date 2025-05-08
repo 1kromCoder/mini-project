@@ -74,7 +74,7 @@ CREATE TABLE "Product" (
 CREATE TABLE "Order" (
     "id" TEXT NOT NULL,
     "restaurantId" TEXT NOT NULL,
-    "table" INTEGER NOT NULL,
+    "table" TEXT NOT NULL,
     "status" "StatusOrder" NOT NULL,
     "waiterId" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
