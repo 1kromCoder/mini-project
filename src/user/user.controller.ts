@@ -74,23 +74,7 @@ export class UserController {
     required: false,
   })
   @ApiQuery({
-    name: 'firstName',
-    required: false,
-  })
-  @ApiQuery({
-    name: 'lastName',
-    required: false,
-  })
-  @ApiQuery({
-    name: 'year',
-    required: false,
-  })
-  @ApiQuery({
-    name: 'region',
-    required: false,
-  })
-  @ApiQuery({
-    name: 'email',
+    name: 'name',
     required: false,
   })
   findAll(
