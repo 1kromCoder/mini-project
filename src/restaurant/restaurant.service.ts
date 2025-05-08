@@ -52,7 +52,7 @@ export class RestaurantService {
         orderBy: { [sortBy]: order },
         skip,
         take: limit,
-        include: { Region: true, Category: true, Order: true, User: true },
+        include: { Region: true },
       });
 
       const total = await this.prisma.restaurant.count({ where });
@@ -74,6 +74,7 @@ export class RestaurantService {
     try {
       const restaurant = await this.prisma.restaurant.findFirst({
         where: { id },
+        include: { User: true, Order: true, Category: true },
       });
       if (!restaurant) throw new NotFoundException('Restaurant not found');
       return restaurant;
