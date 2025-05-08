@@ -18,7 +18,7 @@ export class TelegramService {
   }
 
   // Foydalanuvchiga xabar yuborish funksiyasi
-  async sendMessageToUser(userId: bigint, message: string): Promise<boolean> {
+  async sendMessageToUser(userId: string, message: string): Promise<boolean> {
     try {
       await this.bot.sendMessage(userId.toString(), message);
       return true;

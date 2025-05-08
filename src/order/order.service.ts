@@ -43,9 +43,22 @@ export class OrderService {
       });
 
       let restaurant = await this.prisma.restaurant.findFirst({where:{id:userId}})
+      let message = `🧾 Yangi buyurtma:
+📦 ID: ${order.id}
+📍 Stol: ${order.table}
+📋 Status: ${order.status}
+🕒 Sana: ${order.createdAt.toLocaleString()}
+
+🛒 Buyurtmalar:
+${order.OrderItems.map((item, i) => 
+  `${i + 1}) ${item.product.name} x${item.quantity}`
+).join('\n')}
+`;
       let user = await this.prisma.user.findFirst({where:{restaurantId:restaurant?.id,role:UserRole.OWNER}})
       if(user?.tgId && order){
-        this.Telegram.sendMessageToUser(user.tgId,`${order}`)
+        console.log("telegram")
+        let result = await this.Telegram.sendMessageToUser(user.tgId,`${message}`)
+        console.log(result)
       }
   
       return order;

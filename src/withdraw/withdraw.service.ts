@@ -13,33 +13,38 @@ export class WithdrawService {
   constructor(private readonly prisma: PrismaService) {}
   async create(createWithdrawDto: CreateWithdrawDto, id: string) {
     try {
-      const user = await this.prisma.user.findUnique({
-        where: { id },
+      let order = await this.prisma.order.findFirst({where:{id:createWithdrawDto.orderId}});
+      if(!order){
+        throw new NotFoundException("order not found")
+      }
+
+      const orderItems = await this.prisma.orderItems.findMany({
+        where: { orderId: order.id },
+        include: { product: true },
+      });
+      
+      if (!orderItems || orderItems.length === 0) {
+        throw new NotFoundException('OrderItems topilmadi');
+      }
+      
+      const totalAmount = orderItems.reduce((acc, item) => {
+        return acc + item.quantity * item.product.price;
+      }, 0);
+
+      const user = await this.prisma.user.findFirst({
+        where: { id: order.waiterId },
         include: { restaurant: true },
       });
 
       if (!user) {
-        throw new BadRequestException('Casher topilmadi');
+        throw new NotFoundException('Waiter topilmadi');
       }
 
-      const { type, amount } = createWithdrawDto;
-      let updatedBalance = user.balance;
-
-      if (type === 'INCOME') {
-        if (!user.restaurant || user.restaurant.tip === undefined) {
-          throw new BadRequestException('Restaurant yoki tip topilmadi');
-        }
-
-        const tipAmount = (amount / 100) * user.restaurant.tip;
-        updatedBalance += tipAmount;
-      } else if (type === 'OUTCOME') {
-        if (user.balance < amount) {
-          throw new BadRequestException('Balansda yetarli mablag‘ mavjud emas');
-        }
-        updatedBalance -= amount;
-      } else {
-        throw new BadRequestException('Noto‘g‘ri withdraw turi');
+      let restaurant = await this.prisma.restaurant.findFirst({where:{id:createWithdrawDto.restaurantId}})
+      if(!restaurant){
+        throw new NotFoundException("restaurant not found")
       }
+      let updatedBalance = (totalAmount / 100) * Number(restaurant.tip)
 
       const withdraw = await this.prisma.withDraw.create({
         data: {
@@ -49,12 +54,18 @@ export class WithdrawService {
       });
 
       await this.prisma.user.update({
-        where: { id },
+        where: { id: user.id },
         data: { balance: updatedBalance },
       });
 
+      await this.prisma.order.update({
+        where: { id: order.id },
+        data: { status: "PAYED" },
+      });
+      
       return withdraw;
     } catch (error) {
+      console.log(error)
       throw new InternalServerErrorException(
         'Withdraw yaratishda xatolik yuz berdi',
       );

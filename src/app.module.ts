@@ -12,9 +12,10 @@ import { OrderModule } from './order/order.module';
 import { WithdrawModule } from './withdraw/withdraw.module';
 import { DebtModule } from './debt/debt.module';
 import { TelegramModule } from './bot/bot.module';
+import { StatsModule } from './stats/stats.module';
 
 @Module({
-  imports: [PrismaModule, RegionModule, RestaurantModule, CategoryModule, ProductModule,UserModule,AdminModule, OrderModule, WithdrawModule, DebtModule, TelegramModule],
+  imports: [PrismaModule, RegionModule, RestaurantModule, CategoryModule, ProductModule,UserModule,AdminModule, OrderModule, WithdrawModule, DebtModule, TelegramModule, StatsModule],
   controllers: [AppController],
   providers: [AppService],
 })

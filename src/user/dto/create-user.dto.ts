@@ -26,7 +26,7 @@ export class CreateUserDto {
     @IsEnum(UserRole)
     role: UserRole
 
-    @ApiProperty({example: 12365452})
-    @IsNumber()
-    tgId:bigint
+    @ApiProperty({example: '12365452'})
+    @IsString()
+    tgId:string
 }

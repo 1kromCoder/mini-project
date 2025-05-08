@@ -18,9 +18,9 @@ import { UserService } from 'src/user/user.service';
 export class AdminController {
   constructor(private readonly userService: UserService) {}
 
-  // @Roles(UserRole.ADMIN)
-  // @UseGuards(RoleGuard)
-  // @UseGuards(AuthGuard)
+  @Roles(UserRole.ADMIN)
+  @UseGuards(RoleGuard)
+  @UseGuards(AuthGuard)
   @Post()
   createAdmin(@Body() dto: CreateAdminDto) {
     return this.userService.createAdmin(dto);

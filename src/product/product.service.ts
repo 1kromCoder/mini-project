@@ -19,6 +19,7 @@ export class ProductService {
 
       return await this.prisma.product.create({ data });
     } catch (err) {
+      console.log(err)
       throw new BadRequestException(err.message);
     }
   }

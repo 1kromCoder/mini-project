@@ -17,8 +17,8 @@ import { Roles } from 'src/user/decorators/role.decorator';
 import { UserRole } from '@prisma/client';
 import { RoleGuard } from 'src/guard/role.guard';
 import { AuthGuard } from 'src/guard/auth.guard';
-import { request } from 'http';
 import { ApiQuery } from '@nestjs/swagger';
+import { Request } from 'express';
 
 @Controller('withdraw')
 export class WithdrawController {
@@ -29,6 +29,7 @@ export class WithdrawController {
   @Post()
   create(@Body() createWithdrawDto: CreateWithdrawDto, @Req() req: Request) {
     let cashedId = req['user-id'];
+    console.log(cashedId)
     return this.withdrawService.create(createWithdrawDto, cashedId);
   }
   @Get('stats')
