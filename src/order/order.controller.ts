@@ -2,21 +2,28 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, Query, Req, UseGuard
 import { OrderService } from './order.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
-import { StatusOrder } from '@prisma/client';
+import { StatusOrder, UserRole } from '@prisma/client';
 import { Request } from 'express';
 import { ApiQuery } from '@nestjs/swagger';
 import { AuthGuard } from 'src/guard/auth.guard';
+import { RoleGuard } from 'src/guard/role.guard';
+import { Roles } from 'src/user/decorators/role.decorator';
 
 @Controller('order')
 export class OrderController {
   constructor(private readonly orderService: OrderService) {}
 
+  @Roles(UserRole.ADMIN,UserRole.WAITER,UserRole.CASHER)
+  @UseGuards(RoleGuard)
   @UseGuards(AuthGuard)
   @Post()
   create(@Body() orderdata: CreateOrderDto, @Req() req:Request) {
     return this.orderService.create(orderdata,req);
   }
 
+  @Roles(UserRole.ADMIN,UserRole.OWNER,UserRole.SUPERADMIN,UserRole.CASHER)
+  @UseGuards(RoleGuard)
+  @UseGuards(AuthGuard)
   @Get()
   @ApiQuery({
     example: 1,
@@ -39,7 +46,7 @@ export class OrderController {
   })
   @ApiQuery({
     name: 'restaurantId',
-    required: false
+    required: true
   })
   findAll(
     @Query('status') status?: StatusOrder,
@@ -51,16 +58,23 @@ export class OrderController {
     return this.orderService.findAll(status, restaurantId, waiterId,Number(page),Number(limit));
   }
 
+  @UseGuards(AuthGuard)
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.orderService.findOne(id);
   }
 
+  @Roles(UserRole.ADMIN,UserRole.OWNER,UserRole.SUPERADMIN,UserRole.CASHER)
+  @UseGuards(RoleGuard)
+  @UseGuards(AuthGuard)
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateOrderDto: UpdateOrderDto) {
     return this.orderService.update(id,updateOrderDto);
   }
 
+  @Roles(UserRole.ADMIN,UserRole.OWNER,UserRole.CASHER)
+  @UseGuards(RoleGuard)
+  @UseGuards(AuthGuard)
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.orderService.remove(id);

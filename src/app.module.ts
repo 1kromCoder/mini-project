@@ -10,9 +10,10 @@ import { UserModule } from './user/user.module';
 import { AdminModule } from './admin/admin.module';
 import { OrderModule } from './order/order.module';
 import { WithdrawModule } from './withdraw/withdraw.module';
+import { DebtModule } from './debt/debt.module';
 
 @Module({
-  imports: [PrismaModule, RegionModule, RestaurantModule, CategoryModule, ProductModule,UserModule,AdminModule, OrderModule, WithdrawModule],
+  imports: [PrismaModule, RegionModule, RestaurantModule, CategoryModule, ProductModule,UserModule,AdminModule, OrderModule, WithdrawModule, DebtModule],
   controllers: [AppController],
   providers: [AppService],
 })
