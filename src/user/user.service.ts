@@ -13,7 +13,14 @@ import { LoginUserDto } from './dto/login-user.dto';
 import { RefreshTokenDto } from './dto/refreshtoken.dto';
 import { hasSubscribers } from 'diagnostics_channel';
 import { CreateAdminDto } from './dto/admin-create.dto';
+import { UserRole } from '@prisma/client';
 
+
+export  enum userrole{
+  CASHER,
+  WAITER,
+  OWNER
+}
 @Injectable()
 export class UserService {
   constructor(
@@ -101,12 +108,64 @@ export class UserService {
     limit = 10,
     sortBy: string = 'createdAt',
     order: 'asc' | 'desc' = 'asc',
-    name?: string
+    name?: string,
+    role?: UserRole,
+    restaurantId?: string
   ) {
     try {
       const where: any = {};
       if (name)
         where.firstName = { contains: name, mode: 'insensitive' };
+
+      if (role)
+        where.role = role;
+
+      if (restaurantId){
+        where.restaurantId = restaurantId;
+      }
+
+      const total = await this.prisma.user.count({ where });
+      const users = await this.prisma.user.findMany({
+        skip: (page - 1) * limit,
+        take: limit,
+        where,
+        orderBy: { [sortBy]: order },
+      });
+
+      return {
+        total,
+        page,
+        lastPage: Math.ceil(total / limit),
+        users,
+      };
+    } catch (error) {
+      throw new BadRequestException(error.message);
+    }
+  }
+
+
+  async findAllForOwner(
+    page = 1,
+    limit = 10,
+    sortBy: string = 'createdAt',
+    order: 'asc' | 'desc' = 'asc',
+    name?: string,
+    role?: userrole,
+    ownerId?: string
+  ) {
+    try {
+      const where: any = {};
+      if (name)
+        where.firstName = { contains: name, mode: 'insensitive' };
+
+      if(role){
+        where.role = role
+      }
+
+      if (ownerId){
+        let owner = await this.prisma.user.findFirst({where:{id:ownerId}})
+        where.restaurantId = owner?.restaurantId;
+      }
 
       const total = await this.prisma.user.count({ where });
       const users = await this.prisma.user.findMany({
