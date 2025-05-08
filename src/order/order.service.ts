@@ -1,14 +1,18 @@
 import { Injectable, NotFoundException, InternalServerErrorException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { StatusOrder } from '@prisma/client';
+import { StatusOrder, UserRole } from '@prisma/client';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { Request } from 'express';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { triggerAsyncId } from 'async_hooks';
+import { send } from 'process';
+import { TelegramService } from 'src/bot/bot.service';
 
 @Injectable()
 export class OrderService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService,
+    private readonly Telegram: TelegramService
+  ) {}
 
   async create(data: CreateOrderDto, req: Request) {
     try {
@@ -37,6 +41,12 @@ export class OrderService {
           },
         },
       });
+
+      let restaurant = await this.prisma.restaurant.findFirst({where:{id:userId}})
+      let user = await this.prisma.user.findFirst({where:{restaurantId:restaurant?.id,role:UserRole.OWNER}})
+      if(user?.tgId && order){
+        this.Telegram.sendMessageToUser(user.tgId,`${order}`)
+      }
   
       return order;
     } catch (error) {

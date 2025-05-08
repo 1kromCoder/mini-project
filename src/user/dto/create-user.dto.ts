@@ -28,5 +28,5 @@ export class CreateUserDto {
 
     @ApiProperty({example: 12365452})
     @IsNumber()
-    tgId:number
+    tgId:bigint
 }

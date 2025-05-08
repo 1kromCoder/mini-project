@@ -41,7 +41,7 @@ CREATE TABLE "User" (
     "restaurantId" TEXT,
     "role" "UserRole" NOT NULL,
     "balance" DOUBLE PRECISION NOT NULL DEFAULT 0,
-    "tgId" INTEGER,
+    "tgId" BIGINT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "User_pkey" PRIMARY KEY ("id")

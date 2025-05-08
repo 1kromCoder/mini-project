@@ -45,7 +45,7 @@ model User {
   restaurantId String?
   role         UserRole
   balance      Float       @default(0)
-  tgId         Int?
+  tgId         BigInt?
   createdAt    DateTime    @default(now())
   Order        Order[]
   WithDraw     WithDraw[]
