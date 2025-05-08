@@ -13,16 +13,25 @@ export class WithdrawService {
   constructor(private readonly prisma: PrismaService) {}
   async create(createWithdrawDto: CreateWithdrawDto, id: string) {
     try {
-      const user = await this.prisma.user.findUnique({ where: { id } });
+      const user = await this.prisma.user.findUnique({
+        where: { id },
+        include: { restaurant: true },
+      });
+
       if (!user) {
         throw new BadRequestException('Casher topilmadi');
       }
 
       const { type, amount } = createWithdrawDto;
-
       let updatedBalance = user.balance;
+
       if (type === 'INCOME') {
-        updatedBalance += amount;
+        if (!user.restaurant || user.restaurant.tip === undefined) {
+          throw new BadRequestException('Restaurant yoki tip topilmadi');
+        }
+
+        const tipAmount = (amount / 100) * user.restaurant.tip;
+        updatedBalance += tipAmount;
       } else if (type === 'OUTCOME') {
         if (user.balance < amount) {
           throw new BadRequestException('Balansda yetarli mablag‘ mavjud emas');
@@ -52,7 +61,7 @@ export class WithdrawService {
     }
   }
 
-  async getWithdrawStats(restaurantId?: string) {
+  async getWithdrawStats(restaurantId: string) {
     try {
       if (restaurantId) {
         const restaurant = await this.prisma.restaurant.findUnique({
@@ -99,17 +108,49 @@ export class WithdrawService {
     }
   }
 
-  async findAll() {
+  async findAll(query: {
+    page?: number;
+    limit?: number;
+    sortBy?: string;
+    sortOrder?: 'asc' | 'desc';
+    type?: 'INCOME' | 'OUTCOME';
+    restaurantId?: string;
+  }) {
     try {
-      return await this.prisma.withDraw.findMany({
+      const {
+        page = 1,
+        limit = 10,
+        sortBy = 'createdAt',
+        sortOrder = 'desc',
+        type,
+        restaurantId,
+      } = query;
+
+      const where: any = {};
+      if (type) where.type = type;
+      if (restaurantId) where.restaurantId = restaurantId;
+
+      const total = await this.prisma.withDraw.count({ where });
+
+      const data = await this.prisma.withDraw.findMany({
+        where,
         include: {
           restaurant: true,
           user: true,
         },
         orderBy: {
-          createdAt: 'desc',
+          [sortBy]: sortOrder,
         },
+        skip: (page - 1) * limit,
+        take: limit,
       });
+
+      return {
+        total,
+        page,
+        limit,
+        data,
+      };
     } catch (error) {
       throw new InternalServerErrorException(
         'Withdrawlarni olishda xatolik yuz berdi',
@@ -124,6 +165,7 @@ export class WithdrawService {
         include: {
           restaurant: true,
           user: true,
+          order: true,
         },
       });
 

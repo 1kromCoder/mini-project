@@ -18,6 +18,7 @@ import { UserRole } from '@prisma/client';
 import { RoleGuard } from 'src/guard/role.guard';
 import { AuthGuard } from 'src/guard/auth.guard';
 import { request } from 'http';
+import { ApiQuery } from '@nestjs/swagger';
 
 @Controller('withdraw')
 export class WithdrawController {
@@ -31,12 +32,35 @@ export class WithdrawController {
     return this.withdrawService.create(createWithdrawDto, cashedId);
   }
   @Get('stats')
-  getStats(@Query('restaurantId') restaurantId?: string) {
+  getStats(@Query('restaurantId') restaurantId: string) {
     return this.withdrawService.getWithdrawStats(restaurantId);
   }
+  @Roles(UserRole.ADMIN, UserRole.SUPERADMIN, UserRole.CASHER, UserRole.OWNER)
+  @UseGuards(RoleGuard)
+  @UseGuards(AuthGuard)
   @Get()
-  findAll() {
-    return this.withdrawService.findAll();
+  @ApiQuery({ name: 'page', required: false, type: Number })
+  @ApiQuery({ name: 'limit', required: false, type: Number })
+  @ApiQuery({ name: 'sortBy', required: false, type: String })
+  @ApiQuery({ name: 'sortOrder', required: false, enum: ['asc', 'desc'] })
+  @ApiQuery({ name: 'type', required: false, enum: ['INCOME', 'OUTCOME'] })
+  @ApiQuery({ name: 'restaurantId', required: false, type: String })
+  findAll(
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
+    @Query('sortBy') sortBy?: string,
+    @Query('sortOrder') sortOrder?: 'asc' | 'desc',
+    @Query('type') type?: 'INCOME' | 'OUTCOME',
+    @Query('restaurantId') restaurantId?: string,
+  ) {
+    return this.withdrawService.findAll({
+      page,
+      limit,
+      sortBy,
+      sortOrder,
+      type,
+      restaurantId,
+    });
   }
 
   @Get(':id')
