@@ -7,16 +7,23 @@ import {
   Param,
   Delete,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { RestaurantService } from './restaurant.service';
 import { CreateRestaurantDto } from './dto/create-restaurant.dto';
 import { UpdateRestaurantDto } from './dto/update-restaurant.dto';
 import { ApiQuery } from '@nestjs/swagger';
+import { Roles } from 'src/user/decorators/role.decorator';
+import { UserRole } from '@prisma/client';
+import { RoleGuard } from 'src/guard/role.guard';
+import { AuthGuard } from 'src/guard/auth.guard';
 
 @Controller('restaurant')
 export class RestaurantController {
   constructor(private readonly restaurantService: RestaurantService) {}
-
+  @Roles(UserRole.ADMIN)
+  @UseGuards(RoleGuard)
+  @UseGuards(AuthGuard)
   @Post()
   create(@Body() createRestaurantDto: CreateRestaurantDto) {
     return this.restaurantService.create(createRestaurantDto);
@@ -74,7 +81,9 @@ export class RestaurantController {
   findOne(@Param('id') id: string) {
     return this.restaurantService.findOne(id);
   }
-
+  @Roles(UserRole.ADMIN, UserRole.SUPERADMIN)
+  @UseGuards(RoleGuard)
+  @UseGuards(AuthGuard)
   @Patch(':id')
   update(
     @Param('id') id: string,
@@ -82,7 +91,9 @@ export class RestaurantController {
   ) {
     return this.restaurantService.update(id, updateRestaurantDto);
   }
-
+  @Roles(UserRole.ADMIN)
+  @UseGuards(RoleGuard)
+  @UseGuards(AuthGuard)
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.restaurantService.remove(id);
