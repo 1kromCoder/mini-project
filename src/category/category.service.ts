@@ -1,14 +1,14 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { CreateRegionDto } from './dto/create-region.dto';
-import { UpdateRegionDto } from './dto/update-region.dto';
+import { CreateCategoryDto } from './dto/create-category.dto';
+import { UpdateCategoryDto } from './dto/update-category.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
-export class RegionService {
+export class CategoryService {
   constructor(private readonly prisma: PrismaService) {}
-  async create(data: CreateRegionDto) {
+  async create(data: CreateCategoryDto) {
     try {
-      return await this.prisma.region.create({ data });
+      return await this.prisma.category.create({ data });
     } catch (err) {
       throw new BadRequestException(err.message);
     }
@@ -16,11 +16,12 @@ export class RegionService {
 
   async findAll(params: {
     name?: string;
+    restaurantId?: string;
     order: 'asc' | 'desc';
     page: number;
     limit: number;
   }) {
-    const { name, order, page, limit } = params;
+    const { name, restaurantId, order, page, limit } = params;
     const skip = (page - 1) * limit;
 
     try {
@@ -28,15 +29,21 @@ export class RegionService {
       if (name) {
         where.name = { contains: name, mode: 'insensitive' };
       }
+      if (restaurantId) {
+        where.restaurantId = restaurantId;
+      }
 
-      const data = await this.prisma.region.findMany({
+      const data = await this.prisma.category.findMany({
         where,
         orderBy: { name: order },
         skip,
         take: limit,
+        include: {
+          restaurant: true,
+        },
       });
 
-      const total = await this.prisma.region.count({ where });
+      const total = await this.prisma.category.count({ where });
 
       return {
         data,
@@ -53,15 +60,15 @@ export class RegionService {
 
   async findOne(id: string) {
     try {
-      return await this.prisma.region.findFirst({ where: { id } });
+      return await this.prisma.category.findFirst({ where: { id } });
     } catch (err) {
       throw new BadRequestException(err.message);
     }
   }
 
-  async update(id: string, data: UpdateRegionDto) {
+  async update(id: string, data: UpdateCategoryDto) {
     try {
-      return await this.prisma.region.update({ where: { id }, data });
+      return await this.prisma.category.update({ where: { id }, data });
     } catch (err) {
       throw new BadRequestException(err.message);
     }
@@ -69,7 +76,7 @@ export class RegionService {
 
   async remove(id: string) {
     try {
-      return await this.prisma.region.delete({ where: { id } });
+      return await this.prisma.category.delete({ where: { id } });
     } catch (err) {
       throw new BadRequestException(err.message);
     }
