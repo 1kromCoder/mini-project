@@ -13,24 +13,56 @@ export class WithdrawService {
   constructor(private readonly prisma: PrismaService) {}
   async create(createWithdrawDto: CreateWithdrawDto, id: string) {
     try {
-      let casherId = await this.prisma.user.findFirst({ where: { id } });
-      if (!casherId) {
-        throw new BadRequestException('casher not found');
+      const user = await this.prisma.user.findUnique({ where: { id } });
+      if (!user) {
+        throw new BadRequestException('Casher topilmadi');
       }
-      return await this.prisma.withDraw.create({
+
+      const { type, amount } = createWithdrawDto;
+
+      let updatedBalance = user.balance;
+      if (type === 'INCOME') {
+        updatedBalance += amount;
+      } else if (type === 'OUTCOME') {
+        if (user.balance < amount) {
+          throw new BadRequestException('Balansda yetarli mablag‘ mavjud emas');
+        }
+        updatedBalance -= amount;
+      } else {
+        throw new BadRequestException('Noto‘g‘ri withdraw turi');
+      }
+
+      const withdraw = await this.prisma.withDraw.create({
         data: {
           ...createWithdrawDto,
           casherId: id,
         },
       });
+
+      await this.prisma.user.update({
+        where: { id },
+        data: { balance: updatedBalance },
+      });
+
+      return withdraw;
     } catch (error) {
       throw new InternalServerErrorException(
         'Withdraw yaratishda xatolik yuz berdi',
       );
     }
   }
+
   async getWithdrawStats(restaurantId?: string) {
     try {
+      if (restaurantId) {
+        const restaurant = await this.prisma.restaurant.findUnique({
+          where: { id: restaurantId },
+        });
+        if (!restaurant) {
+          throw new NotFoundException('Restaurant topilmadi');
+        }
+      }
+
       const where = restaurantId ? { restaurantId } : {};
 
       const income = await this.prisma.withDraw.aggregate({
