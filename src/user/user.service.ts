@@ -12,6 +12,7 @@ import * as bcrypt from 'bcrypt';
 import { LoginUserDto } from './dto/login-user.dto';
 import { RefreshTokenDto } from './dto/refreshtoken.dto';
 import { hasSubscribers } from 'diagnostics_channel';
+import { CreateAdminDto } from './dto/admin-create.dto';
 
 @Injectable()
 export class UserService {
@@ -180,15 +181,13 @@ export class UserService {
     }
   }
 
-  async createAdmin(data: CreateUserDto) {
+  async createAdmin(data: CreateAdminDto) {
     try {
       const exists = await this.checkPhone(data.phone)
-      if (exists) throw new BadRequestException('Email already exists')
+      if (exists) throw new BadRequestException('Phone already exists')
   
       let hash = bcrypt.hashSync(data.password,10)
-      const admin = await this.prisma.user.create({
-        data:{...data,password: hash}
-      })
+      const admin = await this.prisma.user.create({data:{...data,password:hash}})
 
       return admin
     } catch (error) {
