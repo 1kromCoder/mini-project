@@ -11,6 +11,7 @@ import { Request } from 'express';
 import * as bcrypt from 'bcrypt';
 import { LoginUserDto } from './dto/login-user.dto';
 import { RefreshTokenDto } from './dto/refreshtoken.dto';
+import { hasSubscribers } from 'diagnostics_channel';
 
 @Injectable()
 export class UserService {
@@ -128,7 +129,7 @@ export class UserService {
   async findOne(id: string) {
     try {
       let user = await this.prisma.user.findFirst({
-        where: { id },
+        where: { id },include:{restaurant:true},
       });
       if (!user) {
         throw new BadRequestException('user not found');
@@ -143,7 +144,7 @@ export class UserService {
   async me(id: string) {
     try {
       let user = await this.prisma.user.findFirst({
-        where: { id },
+        where: { id },include:{restaurant:true},
       });
       if (!user) {
         throw new BadRequestException('user not found');
@@ -156,6 +157,9 @@ export class UserService {
 
   async update(id: string, data: UpdateUserDto) {
     try {
+      if(data.role == "ADMIN" || data.role == 'SUPERADMIN'){
+        throw new BadRequestException("Please change role, only allow WAITER, CASHER and WAITER")
+      }
       let user = await this.prisma.user.update({ where: { id }, data });
       if (!user) {
         throw new BadRequestException('user not found');
@@ -173,6 +177,35 @@ export class UserService {
       return user;
     } catch (error) {
       throw new BadRequestException(error.message);
+    }
+  }
+
+  async createAdmin(data: CreateUserDto) {
+    try {
+      const exists = await this.checkPhone(data.phone)
+      if (exists) throw new BadRequestException('Email already exists')
+  
+      let hash = bcrypt.hashSync(data.password,10)
+      const admin = await this.prisma.user.create({
+        data:{...data,password: hash}
+      })
+
+      return admin
+    } catch (error) {
+      throw new BadRequestException(error.message)
+    }
+  }
+  
+  async deleteAdmin(id: string) {
+    try {
+      const user = await this.findOne(id)
+      if (user.role !== 'ADMIN' && user.role !== 'SUPERADMIN') {
+        throw new BadRequestException('User is not an admin')
+      }
+  
+      return await this.prisma.user.delete({ where: { id } })
+    } catch (error) {
+      throw new BadRequestException(error.message)
     }
   }
 }
