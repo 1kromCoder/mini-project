@@ -31,9 +31,12 @@ export class WithdrawController {
     return this.withdrawService.create(createWithdrawDto, cashedId);
   }
   @Get('stats')
-  getStats(@Query('restaurantId') restaurantId?: string) {
+  getStats(@Query('restaurantId') restaurantId: string) {
     return this.withdrawService.getWithdrawStats(restaurantId);
   }
+  @Roles(UserRole.ADMIN,UserRole.SUPERADMIN,UserRole.CASHER,UserRole.OWNER)
+  @UseGuards(RoleGuard)
+  @UseGuards(AuthGuard)
   @Get()
   findAll() {
     return this.withdrawService.findAll();

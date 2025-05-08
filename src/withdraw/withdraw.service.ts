@@ -13,16 +13,25 @@ export class WithdrawService {
   constructor(private readonly prisma: PrismaService) {}
   async create(createWithdrawDto: CreateWithdrawDto, id: string) {
     try {
-      const user = await this.prisma.user.findUnique({ where: { id } });
+      const user = await this.prisma.user.findUnique({
+        where: { id },
+        include: { restaurant: true },
+      });
+
       if (!user) {
         throw new BadRequestException('Casher topilmadi');
       }
 
       const { type, amount } = createWithdrawDto;
-
       let updatedBalance = user.balance;
+
       if (type === 'INCOME') {
-        updatedBalance += amount;
+        if (!user.restaurant || user.restaurant.tip === undefined) {
+          throw new BadRequestException('Restaurant yoki tip topilmadi');
+        }
+
+        const tipAmount = (amount / 100) * user.restaurant.tip;
+        updatedBalance += tipAmount;
       } else if (type === 'OUTCOME') {
         if (user.balance < amount) {
           throw new BadRequestException('Balansda yetarli mablag‘ mavjud emas');
@@ -52,7 +61,7 @@ export class WithdrawService {
     }
   }
 
-  async getWithdrawStats(restaurantId?: string) {
+  async getWithdrawStats(restaurantId: string) {
     try {
       if (restaurantId) {
         const restaurant = await this.prisma.restaurant.findUnique({
@@ -104,7 +113,6 @@ export class WithdrawService {
       return await this.prisma.withDraw.findMany({
         include: {
           restaurant: true,
-          user: true,
         },
         orderBy: {
           createdAt: 'desc',
@@ -124,6 +132,7 @@ export class WithdrawService {
         include: {
           restaurant: true,
           user: true,
+          order: true,
         },
       });
 
