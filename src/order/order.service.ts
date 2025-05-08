@@ -4,6 +4,7 @@ import { StatusOrder } from '@prisma/client';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { Request } from 'express';
 import { UpdateOrderDto } from './dto/update-order.dto';
+import { triggerAsyncId } from 'async_hooks';
 
 @Injectable()
 export class OrderService {
@@ -80,8 +81,10 @@ export class OrderService {
       const order = await this.prisma.order.findUnique({
         where: { id },
         include: {
+          user:true,
+          restaurant:true,
           OrderItems: {
-            include: { product: true },
+            include: { product: true},
           },
         },
       });
