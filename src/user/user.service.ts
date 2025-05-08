@@ -17,9 +17,9 @@ import { UserRole } from '@prisma/client';
 
 
 export  enum userrole{
-  CASHER,
-  WAITER,
-  OWNER
+  CASHER = "CASHER",
+  WAITER = "WAITER",
+  OWNER = "OWNER"
 }
 @Injectable()
 export class UserService {

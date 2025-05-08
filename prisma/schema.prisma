@@ -85,7 +85,7 @@ model Order {
   id           String       @id @default(uuid())
   restaurant   Restaurant   @relation(fields: [restaurantId], references: [id])
   restaurantId String
-  table        Int
+  table        String
   status       StatusOrder
   user         User         @relation(fields: [waiterId], references: [id])
   waiterId     String
