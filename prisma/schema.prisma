@@ -34,6 +34,7 @@ model Restaurant {
   Order     Order[]
   WithDraw  WithDraw[]
   Debt      Debt[]
+  Product   Product[]
 }
 
 model User {
@@ -71,14 +72,16 @@ model Category {
 }
 
 model Product {
-  id         String       @id @default(uuid())
-  name       String
-  price      Float
-  category   Category     @relation(fields: [categoryId], references: [id])
-  categoryId String
-  isActive   Boolean
-  createdAt  DateTime     @default(now())
-  OrderItems OrderItems[]
+  id           String       @id @default(uuid())
+  name         String
+  price        Float
+  category     Category     @relation(fields: [categoryId], references: [id])
+  categoryId   String
+  isActive     Boolean
+  createdAt    DateTime     @default(now())
+  OrderItems   OrderItems[]
+  restaurant   Restaurant   @relation(fields: [restaurantId], references: [id])
+  restaurantId String
 }
 
 model Order {

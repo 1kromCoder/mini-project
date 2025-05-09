@@ -3,8 +3,8 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TelegramService } from './bot.service';
 
 @Module({
-  imports: [ConfigModule], // .env faylidagi sozlamalarni o'qish uchun
+  imports: [ConfigModule], 
   providers: [TelegramService],
-  exports: [TelegramService], // TelegramService'ni boshqa modullarda ishlatish uchun eksport qilamiz
+  exports: [TelegramService],
 })
 export class TelegramModule {}

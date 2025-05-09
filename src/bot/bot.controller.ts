@@ -5,7 +5,7 @@ import { AppController } from 'src/app.controller';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }), // .env faylini global qilish
+    ConfigModule.forRoot({ isGlobal: true }), 
     TelegramModule,
   ],
   controllers: [AppController],

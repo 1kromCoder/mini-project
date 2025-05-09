@@ -13,6 +13,9 @@ export class UpdateProductDto extends PartialType(CreateProductDto) {
   @IsString()
   categoryId?: string;
   @ApiProperty()
+  @IsString()
+  restaurantId?: string;
+  @ApiProperty()
   @IsBoolean()
   isActive?: boolean;
 }

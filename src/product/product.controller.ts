@@ -14,12 +14,17 @@ import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { ApiQuery } from '@nestjs/swagger';
 import { AuthGuard } from 'src/guard/auth.guard';
+import { Roles } from 'src/user/decorators/role.decorator';
+import { UserRole } from '@prisma/client';
+import { RoleGuard } from 'src/guard/role.guard';
 
 @Controller('product')
 export class ProductController {
   constructor(private readonly productService: ProductService) {}
 
-  
+  @Roles(UserRole.ADMIN, UserRole.SUPERADMIN)
+  @UseGuards(RoleGuard)
+  @UseGuards(AuthGuard)
   @Post()
   create(@Body() createProductDto: CreateProductDto) {
     return this.productService.create(createProductDto);
@@ -27,8 +32,9 @@ export class ProductController {
 
   @Get()
   @ApiQuery({ name: 'categoryId', required: false, type: String })
+  @ApiQuery({ name: 'restaurantId', required: false, type: String }) // Qo‘shildi
   @ApiQuery({ name: 'name', required: false, type: String })
-  @ApiQuery({ name: 'price', required: false, type: String }) 
+  @ApiQuery({ name: 'price', required: false, type: String })
   @ApiQuery({
     name: 'sortBy',
     required: false,
@@ -45,6 +51,7 @@ export class ProductController {
   @ApiQuery({ name: 'limit', required: false, type: Number, example: 10 })
   findAll(
     @Query('categoryId') categoryId?: string,
+    @Query('restaurantId') restaurantId?: string, // Qo‘shildi
     @Query('name') name?: string,
     @Query('price') price?: string,
     @Query('sortBy') sortBy: string = 'createdAt',
@@ -57,6 +64,7 @@ export class ProductController {
 
     return this.productService.findAll({
       categoryId,
+      restaurantId,
       name,
       price,
       sortBy,

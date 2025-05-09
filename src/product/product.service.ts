@@ -16,16 +16,20 @@ export class ProductService {
         where: { id: data.categoryId },
       });
       if (!category) throw new BadRequestException('Category not found');
-
+      const restaurant = await this.prisma.restaurant.findUnique({
+        where: { id: data.restaurantId },
+      });
+      if (!restaurant) throw new BadRequestException('Restaurant not found');
       return await this.prisma.product.create({ data });
     } catch (err) {
-      console.log(err)
+      console.log(err);
       throw new BadRequestException(err.message);
     }
   }
 
   async findAll(params: {
     categoryId?: string;
+    restaurantId?: string;
     name?: string;
     price?: string;
     sortBy: string;
@@ -33,13 +37,24 @@ export class ProductService {
     page: number;
     limit: number;
   }) {
-    const { categoryId, name, sortBy, price, order, page, limit } = params;
+    const {
+      categoryId,
+      restaurantId,
+      name,
+      price,
+      sortBy,
+      order,
+      page,
+      limit,
+    } = params;
+
     const skip = (page - 1) * limit;
 
     try {
       const where: any = {};
 
       if (categoryId) where.categoryId = categoryId;
+      if (restaurantId) where.restaurantId = restaurantId;
       if (name) where.name = { contains: name, mode: 'insensitive' };
       if (price) where.price = Number(price);
 
